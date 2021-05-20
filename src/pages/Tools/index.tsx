@@ -195,6 +195,36 @@ export default function Pool() {
                                 </FixedHeightRow>
                             </AutoColumn>
                         </StyledPositionCard>
+                        <StyledPositionCard>
+                            <AutoColumn gap="12px">
+                                <FixedHeightRow>
+                                    <RowFixed>
+                                        <Text fontWeight={500} fontSize={16}>
+                                            BOSHI
+                                        </Text>
+                                    </RowFixed>
+                                </FixedHeightRow>
+                                <FixedHeightRow>
+                                    <RowFixed>
+                                        {/* <DoubleCurrencyLogo currency0={currency0} currency1={currency1} margin={true} size={20} /> */}
+                                        <Text fontWeight={500} fontSize={14}>
+                                            {i18n._(t`Bento BASED Exchange 🍱`)}
+                                        </Text>
+                                    </RowFixed>
+                                    <RowFixed>
+                                        <ButtonEmpty
+                                            padding="6px 8px"
+                                            borderRadius="20px"
+                                            width="fit-content"
+                                            as={Link}
+                                            to={`/boshi`}
+                                        >
+                                            {i18n._(t`Manage`)}
+                                        </ButtonEmpty>
+                                    </RowFixed>
+                                </FixedHeightRow>
+                            </AutoColumn>
+                        </StyledPositionCard>
                     </AutoColumn>
                 </AutoColumn>
             </PageWrapper>
