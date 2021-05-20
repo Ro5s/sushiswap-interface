@@ -142,22 +142,27 @@ export default function CurrencyInputPanel({
     const { account } = useActiveWeb3React()
     const theme = useTheme()
 
-    const { allowance, approve, nyanSushi } = useMeowshi()
+    const { allowance, sushiApprove, sushiBarApprove, nyanSushi, nyan } = useMeowshi()
 
     const sushiBalanceBigInt = useTokenBalance('0x6b3595068778dd592e39a122f4f5a5cf09c90fe2')
     const sushiBalance = formatFromBalance(sushiBalanceBigInt?.value, sushiBalanceBigInt?.decimals)
-    const decimals = sushiBalanceBigInt?.decimals
+    const sushiDecimals = sushiBalanceBigInt?.decimals
+
+    const sushiBarBalanceBigInt = useTokenBalance('0x8798249c2E607446EfB7Ad49eC89dD1865Ff4272')
+    const sushiBarBalance = formatFromBalance(sushiBarBalanceBigInt?.value, sushiBarBalanceBigInt?.decimals)
+    const sushiBarDecimals = sushiBarBalanceBigInt?.decimals
 
     console.log('sushi allowance:', allowance)
-
-    console.log('sushiBalance:', sushiBalance, sushiBalanceBigInt, decimals)
+    console.log('sushiBalance:', sushiBalance, sushiBalanceBigInt, sushiDecimals)
+    console.log('sushiBar allowance:', allowance)
+    console.log('sushiBarBalance:', sushiBarBalance, sushiBarBalanceBigInt, sushiBarDecimals)
 
     // handle approval
     const [requestedApproval, setRequestedApproval] = useState(false)
     const handleApprove = useCallback(async () => {
         try {
             setRequestedApproval(true)
-            const txHash = await approve()
+            const txHash = await sushiApprove()
             console.log(txHash)
             // user rejected tx or didn't go thru
             if (!txHash) {
@@ -166,7 +171,7 @@ export default function CurrencyInputPanel({
         } catch (e) {
             console.log(e)
         }
-    }, [approve, setRequestedApproval])
+    }, [sushiApprove, setRequestedApproval])
 
     // disable buttons if pendingTx, todo: styles could be improved
     const [pendingTx, setPendingTx] = useState(false)
@@ -178,12 +183,17 @@ export default function CurrencyInputPanel({
         setMaxSelected(max)
         setDepositValue(depositValue)
     }, [])
-    // used for max input button
-    const maxDepositAmountInput = sushiBalanceBigInt
-    //const atMaxDepositAmount = true
-    const handleMaxDeposit = useCallback(() => {
-        maxDepositAmountInput && onUserDepositInput(sushiBalance, true)
-    }, [maxDepositAmountInput, onUserDepositInput, sushiBalance])
+    // used for max input buttons
+    const maxSushiDepositAmountInput = sushiBalanceBigInt
+    const maxSushiBarDepositAmountInput = sushiBarBalanceBigInt
+    // const atMaxDepositAmount = true
+    const handleMaxSushiDeposit = useCallback(() => {
+        maxSushiDepositAmountInput && onUserDepositInput(sushiBalance, true)
+    }, [maxSushiDepositAmountInput, onUserDepositInput, sushiBalance])
+
+    const handleMaxSushiBarDeposit = useCallback(() => {
+        maxSushiBarDepositAmountInput && onUserDepositInput(sushiBarBalance, true)
+    }, [maxSushiBarDepositAmountInput, onUserDepositInput, sushiBarBalance])
 
     return (
         <>
@@ -202,7 +212,7 @@ export default function CurrencyInputPanel({
                                 </TYPE.body>
                                 {account && (
                                     <TYPE.body
-                                        onClick={handleMaxDeposit}
+                                        onClick={handleMaxSushiDeposit}
                                         color={theme.text2}
                                         fontWeight={500}
                                         fontSize={14}
@@ -228,7 +238,7 @@ export default function CurrencyInputPanel({
                                     }}
                                 />
                                 {account && label !== 'To' && (
-                                    <StyledBalanceMax onClick={handleMaxDeposit}>{i18n._(t`MAX`)}</StyledBalanceMax>
+                                    <StyledBalanceMax onClick={handleMaxSushiDeposit}>{i18n._(t`MAX`)}</StyledBalanceMax>
                                 )}
                             </>
                         )}
@@ -250,32 +260,95 @@ export default function CurrencyInputPanel({
                                 onClick={async () => {
                                     setPendingTx(true)
                                     if (maxSelected) {
-                                        await nyanSushi(maxDepositAmountInput)
+                                        await nyanSushi(maxSushiDepositAmountInput)
                                     } else {
-                                        await nyanSushi(formatToBalance(depositValue, decimals))
+                                        await nyanSushi(formatToBalance(depositValue, sushiDecimals))
                                     }
                                     setPendingTx(false)
                                 }}
                             >
                                 <Aligner>
-                                    <StyledButtonName>NYAN</StyledButtonName>
+                                    <StyledButtonName>NYAN SUSHI</StyledButtonName>
                                 </Aligner>
                             </ButtonSelect>
                         )}
-                        {/* <ButtonSelect
-              disabled={
-                pendingTx || !sushiBalance || Number(depositValue) === 0 || Number(depositValue) > Number(sushiBalance)
-              }
-              onClick={async () => {
-                setPendingTx(true)
-                await meowshi(depositValue)
-                setPendingTx(false)
-              }}
-            >
-              <Aligner>
-                <StyledButtonName>Meowshi</StyledButtonName>
-              </Aligner>
-            </ButtonSelect> */}
+                    </InputRow>
+                </Container>
+            </InputPanel>
+            <InputPanel id={id}>
+                <Container
+                    hideInput={hideInput}
+                    cornerRadiusBottomNone={cornerRadiusBottomNone}
+                    cornerRadiusTopNone={cornerRadiusTopNone}
+                >
+                    {!hideInput && (
+                        <LabelRow>
+                            <RowBetween>
+                                <TYPE.body color={theme.text2} fontWeight={500} fontSize={14}>
+                                    {label}
+                                </TYPE.body>
+                                {account && (
+                                    <TYPE.body
+                                        onClick={handleMaxSushiBarDeposit}
+                                        color={theme.text2}
+                                        fontWeight={500}
+                                        fontSize={14}
+                                        style={{ display: 'inline', cursor: 'pointer' }}
+                                    >
+                                        {i18n._(t`xSUSHI Balance: ${sushiBarBalance}`)}
+                                    </TYPE.body>
+                                )}
+                            </RowBetween>
+                        </LabelRow>
+                    )}
+                    <InputRow
+                        style={hideInput ? { padding: '0', borderRadius: '8px' } : {}}
+                        selected={disableCurrencySelect}
+                    >
+                        {!hideInput && (
+                            <>
+                                <NumericalInput
+                                    className="token-amount-input"
+                                    value={depositValue}
+                                    onUserInput={val => {
+                                        onUserDepositInput(val)
+                                    }}
+                                />
+                                {account && label !== 'To' && (
+                                    <StyledBalanceMax onClick={handleMaxSushiBarDeposit}>{i18n._(t`MAX`)}</StyledBalanceMax>
+                                )}
+                            </>
+                        )}
+                        {!allowance || Number(allowance) === 0 ? (
+                            <ButtonSelect onClick={handleApprove}>
+                                <Aligner>
+                                    <StyledButtonName>{i18n._(t`Approve`)}</StyledButtonName>
+                                </Aligner>
+                            </ButtonSelect>
+                        ) : (
+                            <ButtonSelect
+                                disabled={
+                                    pendingTx ||
+                                    !sushiBarBalance ||
+                                    Number(depositValue) === 0 ||
+                                    // todo this should be a bigInt comparison
+                                    Number(depositValue) > Number(sushiBarBalance)
+                                }
+                                onClick={async () => {
+                                    setPendingTx(true)
+                                    if (maxSelected) {
+                                        await nyan(maxSushiBarDepositAmountInput)
+                                    } else {
+                                        await nyan(formatToBalance(depositValue, sushiBarDecimals))
+                                    }
+                                    setPendingTx(false)
+                                }}
+                            >
+                                <Aligner>
+                                    <StyledButtonName>NYAN xSUSHI</StyledButtonName>
+                                </Aligner>
+                            </ButtonSelect>
+                        )}
                     </InputRow>
                 </Container>
             </InputPanel>
