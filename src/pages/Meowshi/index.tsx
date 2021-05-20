@@ -47,7 +47,7 @@ export default function Nyan() {
         <>
             <Helmet>
                 <title>Meowshi | Sushi</title>
-                <meta name="description" content="Migrate SUSHI -> xSUSHI -> NYAN" />
+                <meta name="description" content="Migrate SUSHI / xSUSHI -> NYAN" />
             </Helmet>
             <PageWrapper>
                 <VoteCard>
